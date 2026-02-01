@@ -1,4 +1,4 @@
-module github.com/AugustSerenity/go-contest-L3/tree/main/l3.3_CommentTree
+module github.com/ProgrammistNik/WB-L3/tree/main/l3.3_CommentTree
 
 go 1.23.0
 
