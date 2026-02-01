@@ -1,4 +1,4 @@
-module github.com/AugustSerenity/go-contest-L3/l3.5_EventBooker
+module github.com/ProgrammistNik/WB-L3/l3.5_EventBooker
 
 go 1.22.6
 
