@@ -1,4 +1,4 @@
-module github.com/AugustSerenity/go-contest-L3/l3.4_ImageProcessor
+module github.com/ProgrammistNik/WB-L3/l3.4_ImageProcessor
 
 go 1.22.6
 
