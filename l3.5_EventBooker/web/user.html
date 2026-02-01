@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Пользователь - EventBooker</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<h1>Бронирование мероприятий <span class="admin-badge">Пользователь</span></h1>
+
+<div class="btn-group">
+    <button onclick="location.href='/'">Главная</button>
+    <button onclick="location.href='/admin'">Администратор</button>
+</div>
+
+<div class="user-section">
+    <h2>Доступные мероприятия</h2>
+    <button onclick="loadEvents()">Обновить список</button>
+    <div id="events-list">Загрузка мероприятий...</div>
+</div>
+
+<div class="user-section">
+    <h2>Забронировать места</h2>
+    <label>ID мероприятия: <input type="number" id="booking-event-id" placeholder="Введите ID или выберите выше"></label><br>
+    <label>Количество мест: <input type="number" id="booking-seats" min="1" value="1"></label><br>
+    <button onclick="bookSeats()">Забронировать места</button>
+    <div id="booking-result"></div>
+</div>
+
+<div class="user-section">
+    <h2>Мои бронирования</h2>
+    <label>ID мероприятия: <input type="number" id="my-bookings-event-id" placeholder="Введите ID или выберите выше"></label><br>
+    <button onclick="loadMyBookings()">Показать бронирования</button>
+    <button onclick="startAutoRefresh()" id="auto-refresh-btn">Автообновление ВКЛ</button>
+    <button onclick="stopAutoRefresh()">Автообновление ВЫКЛ</button>
+    <span id="refresh-status"></span>
+    <div id="my-bookings">Выберите мероприятие для просмотра бронирований</div>
+</div>
+
+<script src="/static/eventLib.js"></script>
+<script>
+let userRefreshInterval = null;
+let currentEventId = null;
+
+async function loadEvents() {
+    const container = document.getElementById('events-list');
+    const events = await EventAPI.fetchEvents();
+    EventAPI.renderEvents(container, events, true);
+}
+
+async function bookSeats() {
+    const eventId = parseInt(document.getElementById('booking-event-id').value);
+    const seats = parseInt(document.getElementById('booking-seats').value);
+    const resultDiv = document.getElementById('booking-result');
+
+    if (!eventId || !seats || seats < 1) {
+        resultDiv.innerHTML = '<div class="error">Введите корректный ID мероприятия и количество мест</div>';
+        return;
+    }
+
+    const result = await EventAPI.bookEvent(eventId, seats);
+
+    if (result.error) {
+        resultDiv.innerHTML = `<div class="error">Ошибка: ${result.error}</div>`;
+    } else {
+        const expiresAt = new Date(result.expiresAt);
+        const timeLeft = Math.floor((expiresAt - new Date()) / 1000 / 60);
+
+        resultDiv.innerHTML = `
+            <div class="success">
+                <strong>Бронь создана успешно!</strong><br>
+                ID брони: ${result.id}<br>
+                Мест: ${result.seats}<br>
+                Статус: ${result.paid ? 'Оплачено' : 'Ожидает оплаты'}<br>
+                ${!result.paid ? `Время на оплату: ${timeLeft} минут` : ''}
+            </div>
+        `;
+
+        loadEvents();
+        if (currentEventId === eventId) {
+            loadMyBookings();
+        }
+    }
+}
+
+async function loadMyBookings() {
+    const eventId = parseInt(document.getElementById('my-bookings-event-id').value);
+    const container = document.getElementById('my-bookings');
+
+    if (!eventId) {
+        container.innerHTML = '<div class="error">Введите ID мероприятия</div>';
+        return;
+    }
+
+    currentEventId = eventId;
+    const bookings = await EventAPI.fetchBookings(eventId);
+    // ИСПРАВЛЕНО: true - показывать кнопки подтверждения у пользователя
+    EventAPI.renderBookings(container, bookings, eventId, true);
+}
+
+function startAutoRefresh() {
+    if (!currentEventId) { 
+        alert('Сначала выберите мероприятие и загрузите бронирования'); 
+        return; 
+    }
+    
+    if (userRefreshInterval) clearInterval(userRefreshInterval);
+    
+    const container = document.getElementById('my-bookings');
+    // ИСПРАВЛЕНО: true - показывать кнопки подтверждения у пользователя
+    userRefreshInterval = EventAPI.startAutoRefresh(container, currentEventId, 10000, true);
+    
+    document.getElementById('refresh-status').innerHTML = 
+        '<span class="auto-refresh-status">✅ Автообновление включено (каждые 10 секунд)</span>';
+    document.getElementById('auto-refresh-btn').disabled = true;
+}
+
+function stopAutoRefresh() {
+    if (userRefreshInterval) {
+        clearInterval(userRefreshInterval);
+        userRefreshInterval = null;
+        document.getElementById('refresh-status').innerHTML = 
+            '<span class="auto-refresh-status">❌ Автообновление остановлено</span>';
+        document.getElementById('auto-refresh-btn').disabled = false;
+    }
+}
+
+loadEvents();
+</script>
+</body>
+</html>
