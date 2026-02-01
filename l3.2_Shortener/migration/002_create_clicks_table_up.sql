@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS clicks (
+    id SERIAL PRIMARY KEY,
+    link_id INTEGER NOT NULL REFERENCES links(id) ON DELETE CASCADE,
+    user_agent TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);

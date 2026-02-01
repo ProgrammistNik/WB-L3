@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>URL Shortener</title>
+</head>
+<body>
+  <h1>Shorten your URL</h1>
+  <form id="shorten-form">
+    <input
+      type="url"
+      id="url-input"
+      placeholder="Enter your long URL"
+      required
+      style="width: 300px;"
+    />
+    <button type="submit">Shorten</button>
+  </form>
+
+  <p>Short URL: <span id="short-url"></span></p>
+
+  <script>
+    const form = document.getElementById('shorten-form');
+    const urlInput = document.getElementById('url-input');
+    const shortUrlSpan = document.getElementById('short-url');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      shortUrlSpan.textContent = 'Loading...';
+
+      try {
+        const response = await fetch('/shorten', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ url: urlInput.value })
+        });
+
+        const json = await response.json();
+
+        if (json.result && json.result.short_url) {
+          const shortUrl = json.result.short_url;
+          const fullShortUrl = `${window.location.origin}/s/${shortUrl}`;
+          shortUrlSpan.innerHTML = `<a href="${fullShortUrl}" target="_blank">${fullShortUrl}</a>`;
+        } else if (json.error) {
+          shortUrlSpan.textContent = `Error: ${json.error}`;
+        } else {
+          shortUrlSpan.textContent = 'Unexpected response from server';
+        }
+      } catch (err) {
+        shortUrlSpan.textContent = 'Failed to shorten URL. Try again.';
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
