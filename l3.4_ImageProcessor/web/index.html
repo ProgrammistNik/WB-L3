@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Processor</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #333; }
+    #gallery { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 20px; }
+    .image-card { border: 1px solid #ccc; padding: 10px; width: 200px; text-align: center; }
+    .image-card img { max-width: 100%; max-height: 150px; display: block; margin-bottom: 10px; cursor: pointer; }
+    button { margin-top: 5px; padding: 5px 10px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Image Processor</h1>
+
+  <form id="uploadForm">
+    <input type="file" name="image" accept="image/*" required>
+    <button type="submit">Загрузить</button>
+  </form>
+
+  <div id="gallery"></div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const gallery = document.getElementById('gallery');
+    const pollingInterval = 2000;
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const resp = await fetch('/upload', { method: 'POST', body: formData });
+      const data = await resp.json();
+      alert('Изображение загружено, ID: ' + data.id);
+      addImageCard(data.id, data.status);
+    });
+
+    function addImageCard(id, status) {
+      const card = document.createElement('div');
+      card.className = 'image-card';
+      card.dataset.id = id;
+
+      const title = document.createElement('div');
+      title.textContent = 'ID: ' + id;
+      card.appendChild(title);
+
+      const statusDiv = document.createElement('div');
+      statusDiv.textContent = 'Статус: ' + status;
+      card.appendChild(statusDiv);
+
+      const img = document.createElement('img');
+      img.title = "Кликните для открытия в новой вкладке";
+      img.style.opacity = 0.5; // пока обрабатывается
+      img.onclick = () => {
+        if (img.src) {
+          window.open(img.src, '_blank'); // открываем blob URL
+        } else {
+          alert('Изображение ещё обрабатывается');
+        }
+      };
+      card.appendChild(img);
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.textContent = 'Удалить';
+      deleteBtn.onclick = () => deleteImage(id, card);
+      card.appendChild(deleteBtn);
+
+      gallery.appendChild(card);
+
+      pollStatus(id, img, statusDiv);
+    }
+
+    async function pollStatus(id, imgEl, statusEl) {
+      const interval = setInterval(async () => {
+        const resp = await fetch(`/image/${id}`);
+        if (resp.status === 202) {
+          const data = await resp.json();
+          statusEl.textContent = 'Статус: ' + data.status;
+        } else if (resp.ok) {
+          const blob = await resp.blob();
+          const url = URL.createObjectURL(blob);
+          imgEl.src = url;
+          imgEl.style.opacity = 1; // теперь готово
+          statusEl.textContent = 'Статус: completed';
+          clearInterval(interval);
+        } else {
+          clearInterval(interval);
+          const data = await resp.json();
+          statusEl.textContent = 'Ошибка: ' + data.error;
+          imgEl.style.opacity = 0.5;
+        }
+      }, pollingInterval);
+    }
+
+    async function deleteImage(id, cardEl) {
+      const resp = await fetch(`/image/${id}`, { method: 'DELETE' });
+      if (resp.ok) {
+        alert('Изображение удалено');
+        gallery.removeChild(cardEl);
+      } else {
+        const data = await resp.json();
+        alert('Ошибка удаления: ' + data.error);
+      }
+    }
+  </script>
+</body>
+</html>

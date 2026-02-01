@@ -1,0 +1,26 @@
+server:
+  address: ":8080"
+  timeout: 4s
+  idle_timeout: 60s
+  shutdown_timeout: 10s
+
+db:
+  host: "postgres-service"  # имя сервиса в docker-compose
+  port: 5432                # внутр. порт контейнера
+  username: "postgres"
+  name: "image_processor"
+  password: "postgres"
+
+storage_path: "/app/uploads"
+
+kafka:
+  brokers:
+    - "kafka:9092"
+  topic: "images"
+  group_id: "image_processor_group"
+
+kafka_ui:
+  enabled: true
+  url: "http://localhost:8081"
+  cluster_name: "local"
+  polling_timeout_ms: 30000
