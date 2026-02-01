@@ -1,4 +1,4 @@
-module github.com/AugustSerenity/go-contest-L3/l3.7_WarehouseControl
+module github.com/ProgrammistNik/WB-L3/l3.7_WarehouseControl
 
 go 1.23.0
 
