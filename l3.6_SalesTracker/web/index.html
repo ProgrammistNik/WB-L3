@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sales Tracker</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>Sales Tracker</h1>
+
+    <!-- Create Item -->
+    <section id="create-item">
+        <h2>Create Item</h2>
+        <form id="item-form">
+            <input type="text" name="type" placeholder="Type" required>
+            <input type="text" name="category" placeholder="Category">
+            <input type="number" name="amount" placeholder="Amount" min="0" step="0.01" required>
+            <input type="date" name="date" required>
+            <button type="submit">Create</button>
+        </form>
+    </section>
+
+    <!-- Filters -->
+    <section id="filters">
+        <h2>Filters</h2>
+        <form id="filter-form">
+            <input type="date"   name="from"     placeholder="From date">
+            <input type="date"   name="to"       placeholder="To date">
+            <input type="text"   name="category" placeholder="Category">
+            <input type="number" name="limit"    placeholder="Limit">
+            <input type="number" name="offset"   placeholder="Offset">
+        </form>
+    </section>
+
+    <!-- Items List -->
+    <section id="items-list">
+        <h2>Items</h2>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Type</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="items-table-body"></tbody>
+        </table>
+    </section>
+
+    <!-- Analytics -->
+    <section id="analytics">
+        <h2>Analytics</h2>
+        <div id="analytics-result"></div>
+    </section>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
