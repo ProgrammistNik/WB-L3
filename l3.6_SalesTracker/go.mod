@@ -1,4 +1,4 @@
-module github.com/AugustSerenity/go-contest-L3/l3.6_SalesTracker
+module github.com/ProgrammistNik/WB-L3/l3.6_SalesTracker
 
 go 1.22.6
 
