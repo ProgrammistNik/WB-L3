@@ -1,4 +1,4 @@
-module github.com/AugustSerenity/go-contest-L3/l3.1
+module github.com/ProgrammistNik/WB-L3/l3.1
 
 go 1.22.6
 
