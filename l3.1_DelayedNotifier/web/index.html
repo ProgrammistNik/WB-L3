@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Delayed Notifier</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 40px;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      text-align: center;
+    }
+    .block {
+      background-color: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, textarea, button {
+      padding: 8px;
+      width: 100%;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      margin-top: 15px;
+      cursor: pointer;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+    }
+    #response {
+      white-space: pre-wrap;
+      background: #eee;
+      padding: 10px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Delayed Notifier UI</h1>
+
+  <div class="block">
+    <h2>Создать уведомление</h2>
+    <label for="message">Сообщение:</label>
+    <textarea id="message" rows="3"></textarea>
+
+    <label for="sendAt">Время отправки (UTC):</label>
+    <input type="datetime-local" id="sendAt">
+
+    <button onclick="createNotification()">Создать</button>
+  </div>
+
+  <div class="block">
+    <h2>Проверить статус</h2>
+    <label for="checkId">ID уведомления:</label>
+    <input type="text" id="checkId">
+    <button onclick="checkStatus()">Проверить</button>
+  </div>
+
+  <div class="block">
+    <h2>Удалить уведомление</h2>
+    <label for="deleteId">ID уведомления:</label>
+    <input type="text" id="deleteId">
+    <button onclick="deleteNotification()">Удалить</button>
+  </div>
+
+  <div class="block">
+    <h2>Ответ сервера</h2>
+    <div id="response">Здесь будет ответ от сервера</div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:8080";
+
+    async function createNotification() {
+      const message = document.getElementById("message").value;
+      const sendAt = document.getElementById("sendAt").value;
+
+      const payload = {
+        message: message,
+        send_at: new Date(sendAt).toISOString()
+      };
+
+      try {
+        const res = await fetch(`${API_BASE}/notify`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        showResponse(data);
+      } catch (err) {
+        showResponse(err.message || err);
+      }
+    }
+
+    async function checkStatus() {
+      const id = document.getElementById("checkId").value;
+      try {
+        const res = await fetch(`${API_BASE}/notify/${id}`);
+        const data = await res.json();
+        showResponse(data);
+      } catch (err) {
+        showResponse(err.message || err);
+      }
+    }
+
+    async function deleteNotification() {
+      const id = document.getElementById("deleteId").value;
+      try {
+        const res = await fetch(`${API_BASE}/notify/${id}`, {
+          method: "DELETE"
+        });
+        const data = await res.json();
+        showResponse(data);
+      } catch (err) {
+        showResponse(err.message || err);
+      }
+    }
+
+    function showResponse(data) {
+      document.getElementById("response").textContent = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>

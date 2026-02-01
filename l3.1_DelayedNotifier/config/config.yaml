@@ -1,0 +1,12 @@
+server:
+  address: ":8080"
+  timeout: 4s
+  idle_timeout: 60s
+  shutdown_timeout: 10s
+rabbitmq:
+  url: "amqp://guest:guest@rabbitmq-service:5672/"
+  queue: "notifications"
+  retry:
+    attempts: 3
+    delay_ms: 400
+    backoff: 2.0
